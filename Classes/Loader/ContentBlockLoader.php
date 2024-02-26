@@ -108,6 +108,10 @@ class ContentBlockLoader
             if (is_dir($recordTypesFolder)) {
                 $loadedContentBlocks[] = $this->loadContentBlocksInExtension($recordTypesFolder, $extensionKey, ContentType::RECORD_TYPE);
             }
+            $pluginsFolder = $package->getPackagePath() . ContentBlockPathUtility::getRelativePluginPath();
+            if (is_dir($pluginsFolder)) {
+                $loadedContentBlocks[] = $this->loadContentBlocksInExtension($pluginsFolder, $extensionKey, ContentType::CONTENT_ELEMENT, true);
+            }
         }
         $loadedContentBlocks = array_merge([], ...$loadedContentBlocks);
         $sortByPriority = fn(LoadedContentBlock $a, LoadedContentBlock $b): int => (int)($b->getYaml()['priority'] ?? 0) <=> (int)($a->getYaml()['priority'] ?? 0);
@@ -142,7 +146,7 @@ class ContentBlockLoader
     /**
      * @return LoadedContentBlock[]
      */
-    protected function loadContentBlocksInExtension(string $path, string $extensionKey, ContentType $contentType): array
+    protected function loadContentBlocksInExtension(string $path, string $extensionKey, ContentType $contentType, bool $isPlugin = false): array
     {
         $result = [];
         $finder = new Finder();
@@ -150,7 +154,12 @@ class ContentBlockLoader
         foreach ($finder as $splFileInfo) {
             $absoluteContentBlockPath = $splFileInfo->getPathname();
             $contentBlockFolderName = $splFileInfo->getRelativePathname();
-            $contentBlockExtPath = ContentBlockPathUtility::getContentBlockExtPath($extensionKey, $contentBlockFolderName, $contentType);
+            $contentBlockExtPath = ContentBlockPathUtility::getContentBlockExtPath(
+                $extensionKey,
+                $contentBlockFolderName,
+                $contentType,
+                $isPlugin,
+            );
             $editorInterfaceYaml = $this->parseEditorInterfaceYaml($absoluteContentBlockPath, $contentType);
             $result[] = $this->loadSingleContentBlock(
                 $editorInterfaceYaml['name'],
@@ -159,6 +168,7 @@ class ContentBlockLoader
                 $extensionKey,
                 $contentBlockExtPath,
                 $editorInterfaceYaml,
+                $isPlugin,
             );
         }
         return $result;
@@ -206,6 +216,7 @@ class ContentBlockLoader
         string $extensionKey,
         string $extPath,
         array $yaml,
+        bool $isPlugin,
     ): LoadedContentBlock {
         if (!file_exists($absolutePath)) {
             throw new \RuntimeException('Content Block "' . $name . '" could not be found in "' . $absolutePath . '".', 1678699637);
@@ -219,7 +230,7 @@ class ContentBlockLoader
 
         $yaml = $this->basicsService->applyBasics($yaml);
         $iconIdentifier = ContentBlockPathUtility::getIconNameWithoutFileExtension();
-        $contentBlockIcon = ContentTypeIconResolver::resolve($name, $absolutePath, $extPath, $iconIdentifier, $contentType);
+        $contentBlockIcon = ContentTypeIconResolver::resolve($name, $absolutePath, $extPath, $iconIdentifier, $contentType, $isPlugin);
 
         return new LoadedContentBlock(
             name: $name,
@@ -229,6 +240,7 @@ class ContentBlockLoader
             hostExtension: $extensionKey,
             extPath: $extPath,
             contentType: $contentType,
+            isPlugin: $isPlugin,
         );
     }
 
