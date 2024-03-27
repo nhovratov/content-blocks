@@ -1,0 +1,491 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"$id": "https://github.com/nhovratov/content-blocks/tree/main/Build/schema/field-type.schema.json",
+	"title": "Field Type",
+	"description": "TYPO3 CMS Content Blocks Field Type",
+	"type": "object",
+	"$defs": {
+		"valuePicker": {
+			"type": "array",
+			"items": {
+				"type": "array",
+				"items": [
+					{
+						"type": "string",
+						"description": "Label"
+					},
+					{
+						"type": "string",
+						"description": "Value"
+					}
+				]
+			}
+		}
+	},
+	"properties": {
+		"identifier": {
+			"type": "string",
+			"description": "The identifier for the field."
+		},
+		"label": {
+			"type": "string",
+			"description": "Simple label (Labels.xlf has precedence)"
+		},
+		"description": {
+			"type": "string",
+			"description": "Simple description (Labels.xlf has precedence)"
+		},
+		"useExistingField": {
+			"type": "boolean",
+			"description": "If enabled, an existing field defined by TCA will be extended."
+		},
+		"prefixField": {
+			"type": "boolean",
+			"description": "If disabled, this will escape prefixing (overrules global option prefixFields)"
+		},
+		"prefixType": {
+			"description": "Determines how to prefix the field if prefixField is enabled.",
+			"type": "string",
+			"enum": [
+				"full",
+				"vendor"
+			]
+		},
+		"displayCond": {
+			"description": "Can be used to display the field only under certain conditions.",
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "array"
+				}
+			]
+		},
+		"onChange": {
+			"type": "string",
+			"description": "Can be used to trigger a reload of the Content Type when this specific field is changed.",
+			"enum": [
+				"reload"
+			]
+		},
+		"type": {
+			"type": "string",
+			"description": "Type of the field.",
+			"enum": [
+				"Basic",
+				"Category",
+				"Checkbox",
+				"Collection",
+				"Color",
+				"DateTime",
+				"Email",
+				"File",
+				"FlexForm",
+				"Folder",
+				"Json",
+				"Language",
+				"Linebreak",
+				"Link",
+				"Number",
+				"Palette",
+				"Password",
+				"Radio",
+				"Relation",
+				"Select",
+				"Slug",
+				"Tab",
+				"Text",
+				"Textarea",
+				"Uuid"
+			]
+		}
+	},
+	"allOf": [
+		{
+			"if": {
+				"properties": {
+					"type": {
+						"const": "Text"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"default": {
+						"type": "string",
+						"description": "Default value set if a new record is created."
+					},
+					"max": {
+						"type": "integer",
+						"description": "Maximum number of characters allowed."
+					},
+					"min": {
+						"type": "integer",
+						"description": "Minimum number of characters required."
+					},
+					"placeholder": {
+						"type": "string",
+						"description": "Placeholder text for the field."
+					},
+					"required": {
+						"type": "boolean",
+						"description": "If set, the field becomes mandatory."
+					},
+					"size": {
+						"type": "integer",
+						"description": "Abstract value for the width of the field."
+					},
+					"valuePicker": {
+						"$ref": "#/$defs/valuePicker"
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"type": {
+						"const": "Textarea"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"default": {
+						"type": "string",
+						"description": "Default value set if a new record is created."
+					},
+					"placeholder": {
+						"type": "string",
+						"description": "Placeholder text for the field."
+					},
+					"rows": {
+						"type": "integer",
+						"description": "Abstract value for the height of the <textarea> field.",
+						"maximum": 20
+					},
+					"required": {
+						"type": "boolean",
+						"description": "If set, the field will become mandatory."
+					},
+					"enableRichtext": {
+						"type": "boolean",
+						"description": "If set to true, the system renders a Rich Text Editor."
+					},
+					"richtextConfiguration": {
+						"type": "string",
+						"description": "The YAML configuration source field used for that RTE field"
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"type": {
+						"const": "Category"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"relationship": {
+						"type": "string",
+						"description": "Depending on the relationship, the category relations are stored in a different way.",
+						"enum": ["oneToOne", "oneToMany", "manyToMany"]
+					},
+					"minitems": {
+						"type": "integer",
+						"description": "Minimum number of items."
+					},
+					"maxitems": {
+						"type": "integer",
+						"description": "Maximum number of items."
+					},
+					"treeConfig": {
+						"type": "object",
+						"properties": {
+							"startingPoints": {
+								"type": "string",
+								"description": "Allows to set one or more roots (category uids), from which the categories should be taken from."
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"type": {
+						"const": "Checkbox"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"default": {
+						"type": "integer",
+						"description": "The default value corresponds to a bit value."
+					},
+					"renderType": {
+						"type": "string",
+						"enum": ["check", "checkboxToggle", "checkboxLabeledToggle"]
+					},
+					"items": {
+						"type": "array",
+						"description": "Only necessary if more than one checkbox is desired.",
+						"items": {
+							"type": "object",
+							"properties": {
+								"label": {
+									"type": "string"
+								},
+								"labelChecked": {
+									"type": "string"
+								},
+								"labelUnchecked": {
+									"type": "string"
+								},
+								"invertStateDisplay": {
+									"type": "boolean"
+								}
+							}
+						}
+					},
+					"allowedCustomProperties": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"itemsProcFunc": {
+						"type": "string",
+						"description": "Define a custom user function to fill items."
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"type": {
+						"const": "Collection"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"fields": {
+						"type": "array",
+						"items": {
+							"$ref": "#/"
+						}
+					},
+					"table": {
+						"description": "Defines the table name for the database.",
+						"type": "string"
+					},
+					"labelField": {
+						"description": "Field identifier which should be used as the title of the record.",
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "array",
+								"items": {
+									"type": "string",
+									"uniqueItems": true,
+									"minItems": 1
+								}
+							}
+						]
+					},
+					"fallbackLabelFields": {
+						"description": "Defines which fields should be used as fallback, if labelField is not filled.",
+						"type": "array",
+						"items": {
+							"type": "string",
+							"uniqueItems": true
+						}
+					},
+					"minitems": {
+						"type": "integer",
+						"description": "Minimum number of items."
+					},
+					"maxitems": {
+						"type": "integer",
+						"description": "Maximum number of items."
+					},
+					"appearance": {
+						"type": "object",
+						"properties": {
+							"collapseAll": {
+								"type": "boolean",
+								"description": "Show all child records collapsed or expanded."
+							},
+							"levelLinksPosition": {
+								"type": "string",
+								"description": "Defines where to show the \"New record\" link",
+								"enum": ["top", "bottom", "both"]
+							}
+						}
+					},
+					"foreign_table": {
+						"type": "string",
+						"description": "It is possible to reference another table instead of creating a new one."
+					},
+					"foreign_field": {
+						"type": "string",
+						"description": "It is possible to override the field name pointing to the parent record."
+					},
+					"shareAcrossTables": {
+						"type": "boolean",
+						"description": "Allows to reference a Record Type across multiple tables"
+					},
+					"shareAcrossFields": {
+						"type": "boolean",
+						"description": "Allows to reference a Record Type across multiple fields"
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"type": {
+						"const": "Color"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"default": {
+						"type": "string",
+						"description": "Default value."
+					},
+					"required": {
+						"type": "boolean",
+						"description": "If set, the field will become mandatory."
+					},
+					"valuePicker": {
+						"$ref": "#/$defs/valuePicker"
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"type": {
+						"const": "DateTime"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"default": {
+						"type": "string",
+						"description": "Default value in Y-m-d format."
+					},
+					"required": {
+						"type": "boolean",
+						"description": "If set, the field will become mandatory."
+					},
+					"dbType": {
+						"type": "string",
+						"description": "Changes the date field to a native MySql DATETIME, DATE or TIME field. ",
+						"enum": ["datetime", "date", "time"]
+					},
+					"range": {
+						"type": "object",
+						"properties": {
+							"lower": {
+								"type": "string"
+							},
+							"upper": {
+								"type": "string"
+							}
+						}
+					},
+					"format": {
+						"type": "string",
+						"description": "How the date should be formatted in the backend view.",
+						"enum": ["datetime", "date", "time", "timesec"]
+					},
+					"disableAgeDisplay": {
+						"type": "boolean",
+						"description": "Disable the display of the age"
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"type": {
+						"const": "Email"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"default": {
+						"type": "string",
+						"description": "Default value."
+					},
+					"placeholder": {
+						"type": "string",
+						"description": "Placeholder text for the field."
+					},
+					"required": {
+						"type": "boolean",
+						"description": "If set, the field will become mandatory."
+					}
+				}
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"type": {
+						"const": "File"
+					}
+				}
+			},
+			"then": {
+				"properties": {
+					"extendedPalette": {
+						"type": "boolean",
+						"description": "If disabled, an additional image or media palette will not be rendered."
+					},
+					"allowed": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "array"
+							}
+						],
+						"description": "List of allowed file types.",
+						"examples": ["common-image-types", "common-media-types"]
+					},
+					"minitems": {
+						"type": "integer",
+						"description": "Minimum number of items."
+					},
+					"maxitems": {
+						"type": "integer",
+						"description": "Maximum number of items."
+					},
+					"cropVariants": {
+						"type": "object"
+					}
+				}
+			}
+		}
+	]
+}
