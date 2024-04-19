@@ -28,21 +28,29 @@ class CreateContentType
     public function createContentBlockContentElementConfiguration(
         string $vendor,
         string $name,
+        string $title,
         array $fields,
         array $basics = [],
         string $group = 'common',
         bool $prefixFields = true,
         string $prefixType = 'full',
+        string $vendorPrefix = '',
         string $table = 'tt_content',
         string $typeField = 'CType',
+        int $priority = 0,
         ?string $type = ''
     ): array {
         $configuration = [
             'name' => $vendor . '/' . $name,
-            'group' => $group,
-            'prefixFields' => $prefixFields,
-            'prefixType' => $prefixType,
+            'title' => $title,
+            'group' => $group == '' ? 'common' : $group,
+            'prefixFields' => (bool)$prefixFields,
         ];
+        if($prefixFields) {
+            // only then add the prefix type and vendor prefix, if set
+            $configuration['prefixType'] = $prefixType;
+            $configuration['vendorPrefix'] = $vendorPrefix;
+        }
         if(count($basics) > 0) {
             $configuration['basics'] = $basics;
         }
@@ -54,6 +62,9 @@ class CreateContentType
         }
         if ($type !== '' && $type !== null) {
             $configuration['typeName'] = $type;
+        }
+        if($priority !== 0) {
+            $configuration['priority'] = $priority;
         }
         $configuration['fields'] = $fields;
 
